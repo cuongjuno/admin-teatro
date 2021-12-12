@@ -54,10 +54,10 @@ export const getCinema = id => async dispatch => {
   }
 };
 
-export const createCinemas = (image, newCinema) => async dispatch => {
+export const createCinemas = (newCinema) => async dispatch => {
   try {
     const token = localStorage.getItem('jwtToken');
-    const url = '/cinemas';
+    const url = 'https://localhost:1810/api/Cinemas';
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -66,10 +66,8 @@ export const createCinemas = (image, newCinema) => async dispatch => {
       },
       body: JSON.stringify(newCinema)
     });
-    const cinema = await response.json();
     if (response.ok) {
       dispatch(setAlert('Cinema Created', 'success', 5000));
-      if (image) dispatch(uploadCinemaImage(cinema._id, image));
       dispatch(getCinemas());
       return { status: 'success', message: 'Cinema Created' };
     }

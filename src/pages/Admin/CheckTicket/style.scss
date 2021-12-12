@@ -1,0 +1,17 @@
+.qr-code {
+  section {
+    overflow: auto !important;
+    input {
+      display: block !important;
+      position: absolute;
+      bottom: 0px;
+      z-index: 99999999999;
+    }
+  }
+}
+
+.cldmm{
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}

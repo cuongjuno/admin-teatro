@@ -4,7 +4,7 @@ import { setAlert } from './alert';
 export const getReservations = () => async dispatch => {
   try {
     const token = localStorage.getItem('jwtToken');
-    const url = '/reservations';
+    const url = 'https://localhost:1810/api/Reservations';
     const response = await fetch(url, {
       method: 'GET',
       headers: {
@@ -13,7 +13,7 @@ export const getReservations = () => async dispatch => {
     });
     const reservations = await response.json();
     if (response.ok) {
-      dispatch({ type: GET_RESERVATIONS, payload: reservations });
+      dispatch({ type: GET_RESERVATIONS, payload: reservations.foundItems });
     }
   } catch (error) {
     dispatch(setAlert(error.message, 'error', 5000));

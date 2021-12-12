@@ -29,11 +29,6 @@ function MovieBanner(props) {
   const { movie, fullDescription } = props;
   const classes = useStyles(props);
   if (!movie) return null;
-  
-  const a = movie.runningTime.split(':'); // split it at the colons
-
-  // Hours are worth 60 minutes.
-  const duration = (+a[0]) * 60 + (+a[1]);
 
   return (
     <div className={classes.movieHero}>
@@ -78,7 +73,7 @@ function MovieBanner(props) {
             className={classes.duration}
             variant="body1"
             color="inherit">
-            {duration} min
+            {movie.runningTimeInMinutes} min
           </Typography>
           <Typography className={classes.genre} variant="body1" color="inherit">
             {movie.tags?.toString()}
