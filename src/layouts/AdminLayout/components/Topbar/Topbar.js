@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { logout } from '../../../../store/actions';
 import { withStyles } from '@material-ui/core/styles';
-import { Badge, Toolbar, IconButton } from '@material-ui/core';
+import { Badge, Toolbar, IconButton, Button } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
 import CloseIcon from '@material-ui/icons/Close';
 import NotificationsIcon from '@material-ui/icons/NotificationsOutlined';
@@ -12,6 +12,8 @@ import InputIcon from '@material-ui/icons/Input';
 
 // Component styles
 import styles from './styles';
+import CheckTicket from '../../../../pages/Admin/CheckTicket/CheckTIcket';
+import { ResponsiveDialog } from '../../../../components';
 
 class Topbar extends Component {
   static defaultProps = {
@@ -26,6 +28,14 @@ class Topbar extends Component {
     logout: PropTypes.func.isRequired,
     auth: PropTypes.object.isRequired
   };
+  
+  state = {
+    open: false
+  }
+  
+  toggleDialog = () => {
+    this.setState({open: !this.state.open})
+  }
 
   handleSignOut = async () => {
     this.props.logout();
@@ -55,6 +65,8 @@ class Topbar extends Component {
           <NavLink className={classes.title} to="/">
             Cinema App
           </NavLink>
+          
+          <Button style={{marginLeft: '40px'}} color='primary' variant='outlined' onClick={()=> this.setState({open: true})} >Check ticket</Button>
 
           <IconButton
             className={classes.notificationsButton}
@@ -70,6 +82,14 @@ class Topbar extends Component {
           </IconButton>
         </Toolbar>
         {children}
+        <ResponsiveDialog
+          id="Add-showtime"
+          open={this.state.open}
+          handleClose={() => this.toggleDialog()}
+          maxWidth='md'
+        >
+          <CheckTicket />
+        </ResponsiveDialog>
       </div>
     );
   }

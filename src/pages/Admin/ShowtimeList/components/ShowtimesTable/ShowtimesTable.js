@@ -93,15 +93,15 @@ class ShowtimesTable extends Component {
                     className={classes.tableRow}
                     hover
                     key={showtime._id}
-                    selected={selectedShowtimes.indexOf(showtime._id) !== -1}>
+                    selected={selectedShowtimes.indexOf(showtime.id) !== -1}>
                     <TableCell className={classes.tableCell}>
                       <div className={classes.tableCellInner}>
                         <Checkbox
                           checked={
-                            selectedShowtimes.indexOf(showtime._id) !== -1
+                            selectedShowtimes.indexOf(showtime.id) !== -1
                           }
                           color="primary"
-                          onChange={() => onSelectShowtime(showtime._id)}
+                          onChange={() => onSelectShowtime(showtime.id)}
                           value="true"
                         />
                         <Typography
@@ -118,13 +118,13 @@ class ShowtimesTable extends Component {
                       {showtime.cinemaId}
                     </TableCell>
                     <TableCell className={classes.tableCell}>
-                      {moment(showtime.startDate).format('DD/MM/YYYY')}
+                      {moment(showtime.startTime).format('DD/MM/YYYY')}
                     </TableCell>
                     <TableCell className={classes.tableCell}>
-                      {moment(showtime.endDate).format('DD/MM/YYYY')}
+                      {moment(showtime.endTime).format('DD/MM/YYYY')}
                     </TableCell>
                     <TableCell className={classes.tableCell}>
-                      {showtime.startAt}
+                      {moment(showtime.startTime).format('hh:mm')}
                     </TableCell>
                   </TableRow>
                 ))}

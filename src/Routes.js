@@ -38,14 +38,12 @@ const Routes = () => {
         <Switch>
           <Route exact path="/login" component={Login} />
           <Route exact path="/register" component={Register} />
-
           <WithLayoutRoute
             exact
             path="/checkin/:reservationId"
             component={Checkin}
             layout={PublicLayout}
           />
-
           <WithLayoutRoute
             exact
             path="/"

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   TOGGLE_DIALOG,
   SELECT_SHOWTIMES,
@@ -19,17 +20,15 @@ export const selectAllShowtimes = () => ({ type: SELECT_ALL_SHOWTIMES });
 export const getShowtimes = () => async dispatch => {
   try {
     const token = localStorage.getItem('jwtToken');
-    const url = '/showtimes';
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
+    const url = 'https://localhost:1810/api/Schedule?Limit=1000000';
+    axios.get(url, { headers: {
         Authorization: `Bearer ${token}`
-      }
-    });
-    const showtimes = await response.json();
-    if (response.ok) {
-      dispatch({ type: GET_SHOWTIMES, payload: showtimes });
     }
+    })
+      .then(response => {
+        console.log(response.data);
+        dispatch({ type: GET_SHOWTIMES, payload: response.data.foundItems });
+      })
   } catch (error) {
     dispatch(setAlert(error.message, 'error', 5000));
   }
@@ -38,7 +37,7 @@ export const getShowtimes = () => async dispatch => {
 export const addShowtime = showtime => async dispatch => {
   try {
     const token = localStorage.getItem('jwtToken');
-    const url = '/showtimes/';
+    const url = `https://localhost:1810/api/Cinemas/rooms/${showtime[0].roomId}/schedules`;
     const response = await fetch(url, {
       method: 'POST',
       headers: {

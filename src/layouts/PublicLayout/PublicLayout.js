@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { makeStyles } from '@material-ui/core';
 import { Navbar, Footer } from './components';
+import { history } from '../../utils';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -12,6 +13,9 @@ const useStyles = makeStyles(theme => ({
 
 function PublicLayout(props) {
   const classes = useStyles(props);
+  useLayoutEffect(() => {
+    history.push('/login');
+  }, [])
   const { children, withFooter = true } = props;
   return (
     <div className={classes.root}>

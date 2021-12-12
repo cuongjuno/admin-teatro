@@ -59,11 +59,6 @@ const useStyles = makeStyles(theme => ({
 function MovieCard(props) {
   const classes = useStyles(props);
   const { className, movie } = props;
-  
-  const a = movie.runningTime.split(':'); // split it at the colons
-
-  // Hours are worth 60 minutes.
-  const duration = (+a[0]) * 60 + (+a[1]);
 
   const rootClassName = classNames(classes.root, className);
   return (
@@ -82,7 +77,7 @@ function MovieCard(props) {
       <div className={classes.stats}>
         <AccessTimeIcon className={classes.updateIcon} />
         <Typography className={classes.updateText} variant="body2">
-          {duration} minutes
+          {movie.runningTimeInMinutes} minutes
         </Typography>
       </div>
     </Paper>

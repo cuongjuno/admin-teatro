@@ -6,39 +6,61 @@ import { withStyles, Typography } from '@material-ui/core';
 import { Button, TextField, MenuItem } from '@material-ui/core';
 import {
   MuiPickersUtilsProvider,
-  KeyboardDatePicker
+  KeyboardDatePicker,
+  DateTimePicker
 } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 
 import styles from './styles';
 import { addShowtime, updateShowtime } from '../../../../../store/actions';
+import axios from 'axios';
 
 class AddShowtime extends Component {
   state = {
     startAt: '',
-    startDate: null,
-    endDate: null,
+    startTime: null,
+    endTime: null,
     movieId: '',
-    cinemaId: ''
+    cinemaId: '',
+    roomId: '',
+    rooms: [],
+    ticketPrice:''
   };
 
   componentDidMount() {
-    if (this.props.selectedShowtime) {
+    if (this.props.selectedShowtime.length > 0) {
       const {
         startAt,
-        startDate,
-        endDate,
+        startTime,
+        endTime,
         movieId,
-        cinemaId
+        cinemaId,
+        ticketPrice
       } = this.props.selectedShowtime;
       this.setState({
         startAt,
-        startDate,
-        endDate,
+        startTime,
+        endTime,
         movieId,
-        cinemaId
+        cinemaId,
+        ticketPrice
       });
     }
+  }
+  
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.cinemaId !== prevState.cinemaId) {
+      this.getRooms();
+    }
+  }
+  
+  getRooms = async () => {
+    axios.get(`https://localhost:1810/api/Cinemas/${this.state.cinemaId}`,  { headers: { 'Authorization': `Bearer ${localStorage.getItem('jwtToken')}` } })
+      .then(respone => {
+        const newState = { ...this.state };
+        newState.rooms = respone.data.rooms;
+        this.setState(newState)
+      })
   }
 
   handleChange = e => {
@@ -54,57 +76,44 @@ class AddShowtime extends Component {
   };
 
   onAddShowtime = () => {
-    const { startAt, startDate, endDate, movieId, cinemaId } = this.state;
+    const { roomId, startTime, endTime, movieId, cinemaId, ticketPrice } = this.state;
     const showtime = {
-      startAt,
-      startDate,
-      endDate,
+      startTime,
+      endTime,
       movieId,
-      cinemaId
+      cinemaId,
+      roomId,
+      ticketPrice: Number(ticketPrice)
     };
-    this.props.addShowtime(showtime);
+    this.props.addShowtime([showtime]);
+    this.props.getShowtimes()
   };
 
   onUpdateShowtime = () => {
-    const { startAt, startDate, endDate, movieId, cinemaId } = this.state;
+    const { startAt, startTime, endTime, movieId, cinemaId, ticketPrice } = this.state;
     const showtime = {
       startAt,
-      startDate,
-      endDate,
+      startTime,
+      endTime,
       movieId,
-      cinemaId
+      cinemaId,
+      ticketPrice
     };
-    this.props.updateShowtime(showtime, this.props.selectedShowtime._id);
-  };
-
-  onFilterMinDate = () => {
-    const { nowShowing } = this.props;
-    const { movieId } = this.state;
-    const selectedMovie = nowShowing.find(movie => movie._id === movieId);
-    if (selectedMovie) return selectedMovie.startDate;
-    return new Date();
-  };
-
-  onFilterMaxDate = () => {
-    const { nowShowing } = this.props;
-    const { movieId } = this.state;
-    const selectedMovie = nowShowing.find(movie => movie._id === movieId);
-    if (selectedMovie) return new Date(selectedMovie.endDate);
-    return false;
+    this.props.updateShowtime([showtime], this.props.selectedShowtime.id);
   };
 
   render() {
     const { nowShowing, cinemas, classes, className } = this.props;
-    const { startAt, startDate, endDate, movieId, cinemaId } = this.state;
-
+    const { startAt, startTime, endTime, movieId, cinemaId, roomId, rooms, ticketPrice } = this.state;
+    console.log('this.props.selectedShowtime', this.props.selectedShowtime);
     const rootClassName = classNames(classes.root, className);
-    const title = this.props.selectedShowtime
+    const title = this.props.selectedShowtime.length > 0
       ? 'Edit Showtime'
       : 'Add Showtime';
-    const submitButton = this.props.selectedShowtime
+    const submitButton = this.props.selectedShowtime.length > 0
       ? 'Update Showtime'
       : 'Save Details';
-    const submitAction = this.props.selectedShowtime
+    const submitAction = this.props.selectedShowtime.length > 0
       ? () => this.onUpdateShowtime()
       : () => this.onAddShowtime();
 
@@ -114,6 +123,26 @@ class AddShowtime extends Component {
           {title}
         </Typography>
         <form autoComplete="off" noValidate>
+          <div className={classes.field}>
+            <TextField
+              fullWidth
+              select
+              className={classes.textField}
+              label="Movie"
+              margin="dense"
+              required
+              value={movieId}
+              variant="outlined"
+              onChange={event =>
+                this.handleFieldChange('movieId', event.target.value)
+              }>
+              {nowShowing.map(movie => (
+                <MenuItem key={movie.id} value={movie.id}>
+                  {movie.name}
+                </MenuItem>
+              ))}
+            </TextField>
+          </div>
           <div className={classes.field}>
             <TextField
               fullWidth
@@ -136,27 +165,21 @@ class AddShowtime extends Component {
                 )
               )}
             </TextField>
-          </div>
-          <div className={classes.field}>
             <TextField
               fullWidth
-              select
               className={classes.textField}
-              label="Movie"
+              helperText="Please specify the Time"
+              label="Ticket price"
               margin="dense"
+              type='number'
               required
-              value={movieId}
               variant="outlined"
+              value={ticketPrice}
               onChange={event =>
-                this.handleFieldChange('movieId', event.target.value)
-              }>
-              {nowShowing.map(movie => (
-                <MenuItem key={movie._id} value={movie._id}>
-                  {movie.title}
-                </MenuItem>
-              ))}
-            </TextField>
-
+                this.handleFieldChange('ticketPrice', event.target.value)
+              }/>
+          </div>
+          <div className={classes.field}>
             <TextField
               fullWidth
               select
@@ -170,8 +193,26 @@ class AddShowtime extends Component {
                 this.handleFieldChange('cinemaId', event.target.value)
               }>
               {cinemas.map(cinema => (
-                <MenuItem key={cinema._id} value={cinema._id}>
+                <MenuItem key={cinema.id} value={cinema.id}>
                   {cinema.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth
+              select
+              className={classes.textField}
+              label="Room"
+              margin="dense"
+              required
+              value={roomId}
+              variant="outlined"
+              onChange={event =>
+                this.handleFieldChange('roomId', event.target.value)
+              }>
+              {rooms.map(room => (
+                <MenuItem key={room.id} value={room.id}>
+                  {room.name}
                 </MenuItem>
               ))}
             </TextField>
@@ -179,31 +220,29 @@ class AddShowtime extends Component {
 
           <div className={classes.field}>
             <MuiPickersUtilsProvider utils={MomentUtils}>
-              <KeyboardDatePicker
+              <DateTimePicker
                 className={classes.textField}
                 inputVariant="outlined"
                 margin="normal"
                 id="start-date"
                 label="Start Date"
                 minDate={new Date()}
-                maxDate={this.onFilterMaxDate()}
-                value={startDate}
-                onChange={date => this.handleFieldChange('startDate', date._d)}
+                value={startTime}
+                onChange={date => this.handleFieldChange('startTime', date._d)}
                 KeyboardButtonProps={{
                   'aria-label': 'change date'
                 }}
               />
 
-              <KeyboardDatePicker
+              <DateTimePicker
                 className={classes.textField}
                 inputVariant="outlined"
                 margin="normal"
                 id="end-date"
                 label="End Date"
-                minDate={new Date(startDate)}
-                maxDate={this.onFilterMaxDate()}
-                value={endDate}
-                onChange={date => this.handleFieldChange('endDate', date._d)}
+                minDate={new Date(startTime)}
+                value={endTime}
+                onChange={date => this.handleFieldChange('endTime', date._d)}
                 KeyboardButtonProps={{
                   'aria-label': 'change date'
                 }}

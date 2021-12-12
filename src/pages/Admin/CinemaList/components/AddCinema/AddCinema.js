@@ -12,24 +12,22 @@ import {
   updateCinemas,
   removeCinemas
 } from '../../../../../store/actions';
-import { FileUpload } from '../../../../../components';
 
 class AddCinema extends Component {
   state = {
     _id: '',
     name: '',
     image: null,
-    ticketPrice: '',
+    long: '',
     city: '',
-    seatsAvailable: '',
+    lat: '',
     seats: [],
     notification: {}
   };
 
   componentDidMount() {
     if (this.props.editCinema) {
-      const { image, ...rest } = this.props.editCinema;
-      this.setState({ ...rest });
+      this.setState(this.props.editCinema);
     }
   }
 
@@ -44,26 +42,27 @@ class AddCinema extends Component {
       getCinemas,
       createCinemas,
       updateCinemas,
-      removeCinemas
+      removeCinemas,
+      handleClose
     } = this.props;
     const {
-      _id,
+      id,
       name,
-      image,
-      ticketPrice,
+      long,
       city,
-      seatsAvailable,
+      lat,
       seats
     } = this.state;
-    const cinema = { name, ticketPrice, city, seatsAvailable, seats };
+    const cinema = { name, long: Number(long), lat: Number(lat), partnerId: "08d9b999-8afa-48de-80c6-5362e19ddd0f" };
     let notification = {};
     type === 'create'
-      ? (notification = await createCinemas(image, cinema))
+      ? (notification = await createCinemas([cinema]))
       : type === 'update'
-      ? (notification = await updateCinemas(image, cinema, _id))
-      : (notification = await removeCinemas(_id));
+        ? (notification = await updateCinemas(cinema, id))
+        : (notification = await removeCinemas(id));
     this.setState({ notification });
     if (notification && notification.status === 'success') getCinemas();
+    handleClose()
   };
 
   handleSeatsChange = (index, value) => {
@@ -93,26 +92,29 @@ class AddCinema extends Component {
         </div>
         {seats.length > 0 &&
           seats.map((seat, index) => (
-            <div key={`seat-${index}-${seat.length}`} className={classes.field}>
+            <div
+              className={classes.field}
+              key={`seat-${index}-${seat.length}`}
+            >
               <TextField
-                key={`new-seat-${index}`}
                 className={classes.textField}
+                inputProps={{
+                  min: 0,
+                  max: 10
+                }}
+                key={`new-seat-${index}`}
                 label={
                   'Add number of seats for row : ' +
                   (index + 10).toString(36).toUpperCase()
                 }
                 margin="dense"
-                required
-                value={seat.length}
-                variant="outlined"
-                type="number"
-                inputProps={{
-                  min: 0,
-                  max: 10
-                }}
                 onChange={event =>
                   this.handleSeatsChange(index, event.target.value)
                 }
+                required
+                type="number"
+                value={seat.length}
+                variant="outlined"
               />
             </div>
           ))}
@@ -124,11 +126,8 @@ class AddCinema extends Component {
     const { classes, className } = this.props;
     const {
       name,
-      image,
-      ticketPrice,
-      city,
-      seatsAvailable,
-      notification
+      long,
+      lat,
     } = this.state;
 
     const rootClassName = classNames(classes.root, className);
@@ -142,70 +141,53 @@ class AddCinema extends Component {
 
     return (
       <div className={rootClassName}>
-        <Typography variant="h4" className={classes.title}>
+        <Typography
+          className={classes.title}
+          variant="h4"
+        >
           {mainTitle}
         </Typography>
-        <form autoComplete="off" noValidate>
+        <form
+          autoComplete="off"
+          noValidate
+        >
           <div className={classes.field}>
             <TextField
               className={classes.textField}
               helperText="Please specify the cinema name"
               label="Name"
               margin="dense"
-              required
-              value={name}
-              variant="outlined"
               onChange={event =>
                 this.handleFieldChange('name', event.target.value)
               }
-            />
-
-            <TextField
-              fullWidth
-              className={classes.textField}
-              label="City"
-              margin="dense"
               required
+              value={name}
               variant="outlined"
-              value={city}
-              onChange={event =>
-                this.handleFieldChange('city', event.target.value)
-              }
-            />
-          </div>
-          <div className={classes.field}>
-            <FileUpload
-              className={classes.textField}
-              file={image}
-              onUpload={event => {
-                const file = event.target.files[0];
-                this.handleFieldChange('image', file);
-              }}
             />
           </div>
 
           <div className={classes.field}>
             <TextField
               className={classes.textField}
-              label="Ticket Price"
+              label="Long"
               margin="dense"
+              onChange={event =>
+                this.handleFieldChange('long', event.target.value)
+              }
               type="number"
-              value={ticketPrice}
+              value={long}
               variant="outlined"
-              onChange={event =>
-                this.handleFieldChange('ticketPrice', event.target.value)
-              }
             />
             <TextField
               className={classes.textField}
-              label="Seats Available"
+              label="Lat"
               margin="dense"
-              required
-              value={seatsAvailable}
-              variant="outlined"
               onChange={event =>
-                this.handleFieldChange('seatsAvailable', event.target.value)
+                this.handleFieldChange('lat', event.target.value)
               }
+              required
+              value={lat}
+              variant="outlined"
             />
           </div>
           {this.renderSeatFields()}
@@ -214,37 +196,21 @@ class AddCinema extends Component {
         <Button
           className={classes.buttonFooter}
           color="primary"
+          onClick={submitAction}
           variant="contained"
-          onClick={submitAction}>
+        >
           {submitButton}
         </Button>
         {this.props.editCinema && (
           <Button
-            color="secondary"
             className={classes.buttonFooter}
+            color="secondary"
+            onClick={() => this.onSubmitAction('remove')}
             variant="contained"
-            onClick={() => this.onSubmitAction('remove')}>
+          >
             Delete Cinema
           </Button>
         )}
-
-        {notification && notification.status ? (
-          notification.status === 'success' ? (
-            <Typography
-              className={classes.infoMessage}
-              color="primary"
-              variant="caption">
-              {notification.message}
-            </Typography>
-          ) : (
-            <Typography
-              className={classes.infoMessage}
-              color="error"
-              variant="caption">
-              {notification.message}
-            </Typography>
-          )
-        ) : null}
       </div>
     );
   }

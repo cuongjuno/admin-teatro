@@ -49,7 +49,7 @@ class CinemaToolbar extends Component {
           id="Add-cinema"
           open={openAddDialog}
           handleClose={() => this.CloseAddDialog()}>
-          <AddCinema />
+          <AddCinema handleClose={() => this.CloseAddDialog()} />
         </ResponsiveDialog>
       </Fragment>
     );
